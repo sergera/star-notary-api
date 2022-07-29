@@ -25,3 +25,7 @@ install: ## Install dependencies to go modules cache
 
 run: ## Start the application with go run
 	@go run cmd/app/*.go
+
+dev: ## Start local database container and run app
+	docker-compose up -d && \
+	PORT=8080 DB_HOST=localhost DB_PORT=5432 DB_NAME=star_notary DB_USER=postgres DB_PASSWORD=postgres go run cmd/app/*.go

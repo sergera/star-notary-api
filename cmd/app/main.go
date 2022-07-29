@@ -2,18 +2,12 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 
 	"github.com/sergera/star-notary-backend/internal/conf"
+	"github.com/sergera/star-notary-backend/internal/controllers"
 )
-
-func getRoot(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
-	fmt.Printf("got / request\n")
-	io.WriteString(w, "Hello World!\n")
-}
 
 func main() {
 
@@ -21,7 +15,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", getRoot)
+	ctl := controllers.NewStarController()
+
+	mux.HandleFunc("/create", ctl.CreateStar)
 
 	srv := &http.Server{
 		Addr:    ":" + conf.Port,
