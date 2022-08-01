@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/sergera/star-notary-backend/internal/models"
@@ -66,11 +65,6 @@ func (sr *StarRepository) Create(m models.StarModel) error {
 		return fail(err)
 	}
 
-	timestamp, err := time.Parse(time.RFC3339Nano, m.Date)
-	if err != nil {
-		log.Println(err)
-		return fail(err)
-	}
 	_, err = tx.Exec(
 		`
 		INSERT INTO stars (id, name, coordinates, is_for_sale, price_ether, date_created, owner_id)
@@ -78,7 +72,7 @@ func (sr *StarRepository) Create(m models.StarModel) error {
 		FROM wallets 
 		WHERE address=$7
 		`,
-		m.TokenId, m.Name, m.Coordinates, false, nil, timestamp, m.Owner,
+		m.TokenId, m.Name, m.Coordinates, false, nil, m.Date, m.Owner,
 	)
 	if err != nil {
 		log.Println(err)
