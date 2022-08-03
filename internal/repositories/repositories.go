@@ -42,46 +42,68 @@ func (sr *StarRepository) Close() {
 	sr.db.Close()
 }
 
-func (sr *StarRepository) Create(m models.StarModel) error {
-	fail := func(err error) error {
-		return fmt.Errorf("Create Star: %v", err)
-	}
-
+func (sr *StarRepository) InsertWalletIfAbsent(m models.StarModel) error {
 	tx, err := sr.db.Begin()
 	if err != nil {
-		return fail(err)
+		return err
 	}
 
-	_, err = tx.Exec(
+	var ownerId string
+	tx.QueryRow(
 		`
-		INSERT INTO wallets(address)
-		VALUES ($1)
-		ON CONFLICT DO NOTHING
+		SELECT id
+		FROM wallets
+		WHERE address=$1
 		`,
 		m.Owner,
-	)
-	if err != nil {
+	).Scan(&ownerId)
+
+	if ownerId == "" {
+		_, err = tx.Exec(
+			`
+			INSERT INTO wallets(address)
+			VALUES ($1)
+			ON CONFLICT DO NOTHING
+			`,
+			m.Owner,
+		)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
 		log.Println(err)
-		return fail(err)
+		return err
+	}
+
+	return nil
+}
+
+func (sr *StarRepository) Create(m models.StarModel) error {
+	tx, err := sr.db.Begin()
+	if err != nil {
+		return err
 	}
 
 	_, err = tx.Exec(
 		`
 		INSERT INTO stars (id, name, coordinates, is_for_sale, price_ether, date_created, owner_id)
 		SELECT $1, $2, $3, $4, $5, $6, id
-		FROM wallets 
+		FROM wallets
 		WHERE address=$7
 		`,
 		m.TokenId, m.Name, m.Coordinates, false, nil, m.Date, m.Owner,
 	)
 	if err != nil {
 		log.Println(err)
-		return fail(err)
+		return err
 	}
 
 	if err = tx.Commit(); err != nil {
 		log.Println(err)
-		return fail(err)
+		return err
 	}
 
 	return nil

@@ -55,6 +55,12 @@ func (sc *StarController) CreateStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = sc.repo.InsertWalletIfAbsent(m)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	err = sc.repo.Create(m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
