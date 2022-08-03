@@ -31,6 +31,30 @@ func (sc *StarController) CreateStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = m.ValidateOwner()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = m.ValidateTokenId()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = m.ValidateCoordinates()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = m.ValidateName()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	err = sc.repo.Create(m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
