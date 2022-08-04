@@ -8,12 +8,13 @@ import (
 )
 
 type StarModel struct {
-	TokenId     string
-	Owner       string
-	Coordinates string
-	Name        string
-	Price       string
-	Date        time.Time
+	TokenId     string    `json:"tokenid"`
+	Owner       string    `json:"owner"`
+	Coordinates string    `json:"coordinates"`
+	Name        string    `json:"name"`
+	Price       string    `json:"price"`
+	IsForSale   bool      `json:"isforsale"`
+	Date        time.Time `json:"date"`
 }
 
 func (s StarModel) ValidateTokenId() error {
@@ -138,4 +139,35 @@ func (s StarModel) ValidatePrice() error {
 	default:
 		return errors.New(errorMsg)
 	}
+}
+
+type StarRangeModel struct {
+	FirstId string
+	LastId  string
+}
+
+func (s StarRangeModel) ValidateRange() error {
+	errorMsg := "invalid range"
+
+	pattern := "^[1-9](?:[0-9]+)?$"
+
+	match, err := regexp.MatchString(pattern, s.FirstId)
+	if err != nil {
+		return err
+	}
+
+	if !match {
+		return errors.New(errorMsg)
+	}
+
+	match, err = regexp.MatchString(pattern, s.LastId)
+	if err != nil {
+		return err
+	}
+
+	if !match {
+		return errors.New(errorMsg)
+	}
+
+	return nil
 }

@@ -18,6 +18,7 @@ func main() {
 	ctl := controllers.NewStarController()
 
 	mux.HandleFunc("/create", ctl.CreateStar)
+	mux.HandleFunc("/stars", ctl.GetStars)
 
 	srv := &http.Server{
 		Addr:    ":" + conf.Port,

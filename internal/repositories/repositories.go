@@ -81,7 +81,7 @@ func (sr *StarRepository) InsertWalletIfAbsent(m models.StarModel) error {
 	return nil
 }
 
-func (sr *StarRepository) Create(m models.StarModel) error {
+func (sr *StarRepository) CreateStar(m models.StarModel) error {
 	tx, err := sr.db.Begin()
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (sr *StarRepository) Create(m models.StarModel) error {
 		FROM wallets
 		WHERE address=$7
 		`,
-		m.TokenId, m.Name, m.Coordinates, false, nil, m.Date, m.Owner,
+		m.TokenId, m.Name, m.Coordinates, false, "0", m.Date, m.Owner,
 	)
 	if err != nil {
 		log.Println(err)
@@ -107,4 +107,39 @@ func (sr *StarRepository) Create(m models.StarModel) error {
 	}
 
 	return nil
+}
+
+func (sr *StarRepository) GetStars(m models.StarRangeModel) ([]models.StarModel, error) {
+	rows, err := sr.db.Query(
+		`
+		SELECT stars.id, stars.name, stars.coordinates, stars.is_for_sale, stars.price_ether, stars.date_created, wallets.address
+		FROM stars, wallets
+		WHERE stars.owner_id = wallets.id
+		AND stars.id >= $1
+		AND stars.id <= $2
+		ORDER BY stars.id ASC
+		`,
+		m.FirstId, m.LastId,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var stars []models.StarModel
+	for rows.Next() {
+		var st models.StarModel
+		err := rows.Scan(&st.TokenId, &st.Name, &st.Coordinates, &st.IsForSale, &st.Price, &st.Date, &st.Owner)
+		if err != nil {
+			return nil, err
+		}
+		stars = append(stars, st)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return stars, nil
 }

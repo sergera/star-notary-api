@@ -61,9 +61,44 @@ func (sc *StarController) CreateStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = sc.repo.Create(m)
+	err = sc.repo.CreateStar(m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+}
+
+func (sc *StarController) GetStars(w http.ResponseWriter, r *http.Request) {
+	defer sc.repo.Close()
+	sc.repo.Open()
+
+	var m models.StarRangeModel
+
+	err := json.NewDecoder(r.Body).Decode(&m)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = m.ValidateRange()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	stars, err := sc.repo.GetStars(m)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	starsInBytes, err := json.Marshal(stars)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(starsInBytes)
 }
