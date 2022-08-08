@@ -72,15 +72,15 @@ func (sc *StarController) GetStars(w http.ResponseWriter, r *http.Request) {
 	defer sc.repo.Close()
 	sc.repo.Open()
 
-	var m models.StarRangeModel
+	firstId := r.URL.Query().Get("firstId")
+	lastId := r.URL.Query().Get("lastId")
 
-	err := json.NewDecoder(r.Body).Decode(&m)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	m := models.StarRangeModel{
+		FirstId: firstId,
+		LastId:  lastId,
 	}
 
-	err = m.ValidateRange()
+	err := m.ValidateRange()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -101,4 +101,17 @@ func (sc *StarController) GetStars(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(starsInBytes)
+}
+
+func CorsHandler(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Access-Control-Allow-Origin", conf.CORSAllowedURL)
+		if r.Method == "OPTIONS" {
+			//handle preflight in here
+			w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Accept")
+			w.Header().Add("Access-Control-Allow-Methods", "GET, OPTIONS")
+		} else {
+			h.ServeHTTP(w, r)
+		}
+	}
 }

@@ -13,6 +13,7 @@ var DBPort string
 var DBName string
 var DBUser string
 var DBPassword string
+var CORSAllowedURL string
 
 var config *hocon.Config
 
@@ -25,6 +26,7 @@ func Setup() {
 	setDBName()
 	setDBUser()
 	setDBPassword()
+	setCORSAllowedURL()
 }
 
 func parseHOCONConfigFile() {
@@ -95,4 +97,13 @@ func setDBPassword() {
 	}
 
 	DBPassword = dbPassword
+}
+
+func setCORSAllowedURL() {
+	corsAllowedURL := config.GetString("cors.url")
+	if len(corsAllowedURL) == 0 {
+		log.Panic("cors allowed url environment variable not found")
+	}
+
+	CORSAllowedURL = corsAllowedURL
 }
