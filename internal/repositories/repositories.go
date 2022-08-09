@@ -64,7 +64,6 @@ func (sr *StarRepository) InsertWalletIfAbsent(m models.StarModel) error {
 			`
 			INSERT INTO wallets(address)
 			VALUES ($1)
-			ON CONFLICT DO NOTHING
 			`,
 			m.Owner,
 		)
@@ -83,12 +82,7 @@ func (sr *StarRepository) InsertWalletIfAbsent(m models.StarModel) error {
 }
 
 func (sr *StarRepository) CreateStar(m models.StarModel) error {
-	tx, err := sr.db.Begin()
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(
+	_, err := sr.db.Exec(
 		`
 		INSERT INTO stars (id, name, coordinates, is_for_sale, price_ether, date_created, owner_id)
 		SELECT $1, $2, $3, $4, $5, $6, id
@@ -98,11 +92,6 @@ func (sr *StarRepository) CreateStar(m models.StarModel) error {
 		m.TokenId, m.Name, m.Coordinates, false, "0", m.Date, m.Owner,
 	)
 	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
 		log.Println(err)
 		return err
 	}
