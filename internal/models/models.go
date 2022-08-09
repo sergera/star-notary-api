@@ -142,8 +142,9 @@ func (s StarModel) ValidatePrice() error {
 }
 
 type StarRangeModel struct {
-	FirstId string
-	LastId  string
+	Start       string
+	End         string
+	OldestFirst bool
 }
 
 func (s StarRangeModel) ValidateRange() error {
@@ -151,7 +152,7 @@ func (s StarRangeModel) ValidateRange() error {
 
 	pattern := "^[1-9](?:[0-9]+)?$"
 
-	match, err := regexp.MatchString(pattern, s.FirstId)
+	match, err := regexp.MatchString(pattern, s.Start)
 	if err != nil {
 		return err
 	}
@@ -160,7 +161,7 @@ func (s StarRangeModel) ValidateRange() error {
 		return errors.New(errorMsg)
 	}
 
-	match, err = regexp.MatchString(pattern, s.LastId)
+	match, err = regexp.MatchString(pattern, s.End)
 	if err != nil {
 		return err
 	}

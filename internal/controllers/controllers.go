@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/sergera/star-notary-backend/internal/conf"
 	"github.com/sergera/star-notary-backend/internal/models"
@@ -68,25 +69,37 @@ func (sc *StarController) CreateStar(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (sc *StarController) GetStars(w http.ResponseWriter, r *http.Request) {
+func (sc *StarController) GetStarRange(w http.ResponseWriter, r *http.Request) {
 	defer sc.repo.Close()
 	sc.repo.Open()
 
-	firstId := r.URL.Query().Get("firstId")
-	lastId := r.URL.Query().Get("lastId")
+	start := r.URL.Query().Get("start")
+	end := r.URL.Query().Get("end")
+	oldestFirst := r.URL.Query().Get("oldest-first")
 
-	m := models.StarRangeModel{
-		FirstId: firstId,
-		LastId:  lastId,
+	if oldestFirst == "" {
+		oldestFirst = "false"
 	}
 
-	err := m.ValidateRange()
+	oldestFirstBool, err := strconv.ParseBool(oldestFirst)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	stars, err := sc.repo.GetStars(m)
+	m := models.StarRangeModel{
+		Start:       start,
+		End:         end,
+		OldestFirst: oldestFirstBool,
+	}
+
+	err = m.ValidateRange()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	stars, err := sc.repo.GetStarRange(m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
