@@ -118,7 +118,7 @@ func (sc *StarController) GetStarRange(w http.ResponseWriter, r *http.Request) {
 
 func CorsHandler(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Access-Control-Allow-Origin", conf.CORSAllowedURL)
+		w.Header().Add("Access-Control-Allow-Origin", conf.CORSAllowedURLs)
 		if r.Method == "OPTIONS" {
 			//handle preflight in here
 			w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Accept")
