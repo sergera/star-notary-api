@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"encoding/json"
@@ -6,73 +6,62 @@ import (
 	"strconv"
 
 	"github.com/sergera/star-notary-backend/internal/conf"
-	"github.com/sergera/star-notary-backend/internal/models"
+	"github.com/sergera/star-notary-backend/internal/domain"
 	"github.com/sergera/star-notary-backend/internal/repositories"
 )
 
-type StarController struct {
-	repo *repositories.StarRepository
+type StarAPI struct {
+	conn       *repositories.DBConnection
+	starRepo   *repositories.StarRepository
+	walletRepo *repositories.WalletRepository
 }
 
-func NewStarController() *StarController {
-	return &StarController{
-		repositories.NewStarRepository(conf.DBHost, conf.DBPort, conf.DBName, conf.DBUser, conf.DBPassword, false),
-	}
+func NewStarAPI() *StarAPI {
+	/* TODO: resolve database session lifecycle */
+	conn := repositories.NewDBConnection(conf.DBHost, conf.DBPort, conf.DBName, conf.DBUser, conf.DBPassword, false)
+	conn.Open()
+	starRepo := repositories.NewStarRepository(conn)
+	walletRepo := repositories.NewWalletRepository(conn)
+	return &StarAPI{conn, starRepo, walletRepo}
 }
 
-func (sc *StarController) CreateStar(w http.ResponseWriter, r *http.Request) {
-	defer sc.repo.Close()
-	sc.repo.Open()
+func (sc *StarAPI) CreateStar(w http.ResponseWriter, r *http.Request) {
+	var e domain.Event
 
-	var m models.StarModel
-
-	err := json.NewDecoder(r.Body).Decode(&m)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = m.ValidateOwner()
-	if err != nil {
+	var m = domain.StarModel{
+		TokenId:     e.TokenId,
+		Coordinates: e.Coordinates,
+		Name:        e.Name,
+		Price:       "0",
+		IsForSale:   false,
+		Date:        e.Date,
+		Wallet: &domain.WalletModel{
+			Address: e.Owner,
+		},
+	}
+
+	if err := m.Validate(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = m.ValidateTokenId()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = m.ValidateCoordinates()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = m.ValidateName()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = sc.repo.InsertWalletIfAbsent(m)
-	if err != nil {
+	if err := sc.walletRepo.InsertWalletIfAbsent(m.Wallet); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = sc.repo.CreateStar(m)
-	if err != nil {
+	if err := sc.starRepo.CreateStar(m); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 }
 
-func (sc *StarController) GetStarRange(w http.ResponseWriter, r *http.Request) {
-	defer sc.repo.Close()
-	sc.repo.Open()
-
+func (sc *StarAPI) GetStarRange(w http.ResponseWriter, r *http.Request) {
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
 	oldestFirst := r.URL.Query().Get("oldest-first")
@@ -87,19 +76,18 @@ func (sc *StarController) GetStarRange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	m := models.StarRangeModel{
+	m := domain.StarRangeModel{
 		Start:       start,
 		End:         end,
 		OldestFirst: oldestFirstBool,
 	}
 
-	err = m.ValidateRange()
-	if err != nil {
+	if err := m.Validate(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	stars, err := sc.repo.GetStarRange(m)
+	stars, err := sc.starRepo.GetStarRange(m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

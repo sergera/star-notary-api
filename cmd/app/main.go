@@ -5,9 +5,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/sergera/star-notary-backend/internal/api"
 	"github.com/sergera/star-notary-backend/internal/conf"
-	"github.com/sergera/star-notary-backend/internal/controllers"
 )
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
 
 func main() {
 
@@ -15,10 +19,10 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	ctl := controllers.NewStarController()
+	starAPI := api.NewStarAPI()
 
-	mux.HandleFunc("/create", ctl.CreateStar)
-	mux.HandleFunc("/star-range", controllers.CorsHandler(ctl.GetStarRange))
+	mux.HandleFunc("/create", starAPI.CreateStar)
+	mux.HandleFunc("/star-range", api.CorsHandler(starAPI.GetStarRange))
 
 	srv := &http.Server{
 		Addr:    ":" + conf.Port,

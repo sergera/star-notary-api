@@ -1,4 +1,4 @@
-package models
+package domain
 
 import (
 	"errors"
@@ -8,13 +8,34 @@ import (
 )
 
 type StarModel struct {
-	TokenId     string    `json:"token_id"`
-	Owner       string    `json:"owner"`
-	Coordinates string    `json:"coordinates"`
-	Name        string    `json:"name"`
-	Price       string    `json:"price"`
-	IsForSale   bool      `json:"is_for_sale"`
-	Date        time.Time `json:"date"`
+	TokenId     string       `json:"token_id"`
+	Coordinates string       `json:"coordinates"`
+	Name        string       `json:"name"`
+	Price       string       `json:"price"`
+	IsForSale   bool         `json:"is_for_sale"`
+	Date        time.Time    `json:"date"`
+	Wallet      *WalletModel `json:"wallet"`
+}
+
+func (s StarModel) Validate() error {
+	if err := s.ValidateTokenId(); err != nil {
+		return err
+	}
+	if err := s.Wallet.Validate(); err != nil {
+		return err
+	}
+	if err := s.ValidateCoordinates(); err != nil {
+		return err
+	}
+	if err := s.ValidateName(); err != nil {
+		return err
+	}
+	if s.IsForSale {
+		if err := s.ValidatePrice(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s StarModel) ValidateTokenId() error {
@@ -30,21 +51,6 @@ func (s StarModel) ValidateTokenId() error {
 	}
 
 	return errors.New("invalid token id")
-}
-
-func (s StarModel) ValidateOwner() error {
-	pattern := "^0x[0-9a-zA-Z]{40}$"
-
-	match, err := regexp.MatchString(pattern, s.Owner)
-	if err != nil {
-		return err
-	}
-
-	if match {
-		return nil
-	}
-
-	return errors.New("invalid owner address")
 }
 
 func (s StarModel) ValidateCoordinates() error {
@@ -147,7 +153,7 @@ type StarRangeModel struct {
 	OldestFirst bool
 }
 
-func (s StarRangeModel) ValidateRange() error {
+func (s StarRangeModel) Validate() error {
 	errorMsg := "invalid range"
 
 	pattern := "^[1-9](?:[0-9]+)?$"
