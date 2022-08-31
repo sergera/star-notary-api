@@ -15,7 +15,7 @@ func init() {
 
 func main() {
 
-	conf.Setup()
+	conf := conf.GetConf()
 
 	mux := http.NewServeMux()
 

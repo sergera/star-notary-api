@@ -2,108 +2,122 @@ package conf
 
 import (
 	"log"
+	"sync"
 
 	"github.com/gurkankaymak/hocon"
 )
 
-var Port string
-var LogPath string
-var DBHost string
-var DBPort string
-var DBName string
-var DBUser string
-var DBPassword string
-var CORSAllowedURLs string
+var once sync.Once
+var instance *conf
 
-var config *hocon.Config
-
-func Setup() {
-	parseHOCONConfigFile()
-	setPort()
-	setLogPath()
-	setDBHost()
-	setDBPort()
-	setDBName()
-	setDBUser()
-	setDBPassword()
-	setCORSAllowedURLs()
+type conf struct {
+	hocon           *hocon.Config
+	Port            string
+	LogPath         string
+	DBHost          string
+	DBPort          string
+	DBName          string
+	DBUser          string
+	DBPassword      string
+	CORSAllowedURLs string
 }
 
-func parseHOCONConfigFile() {
-	conf, err := hocon.ParseResource("application.conf")
+func GetConf() *conf {
+	once.Do(func() {
+		var c *conf = &conf{}
+		c.setup()
+		instance = c
+	})
+	return instance
+}
+
+func (c *conf) setup() {
+	c.parseHOCONConfigFile()
+	c.setPort()
+	c.setLogPath()
+	c.setDBHost()
+	c.setDBPort()
+	c.setDBName()
+	c.setDBUser()
+	c.setDBPassword()
+	c.setCORSAllowedURLs()
+}
+
+func (c *conf) parseHOCONConfigFile() {
+	hocon, err := hocon.ParseResource("application.conf")
 	if err != nil {
 		log.Panic("error while parsing configuration file: ", err)
 	}
 
-	log.Printf("all configuration: %+v", *conf)
+	log.Printf("configurations: %+v", *hocon)
 
-	config = conf
+	c.hocon = hocon
 }
 
-func setPort() {
-	port := config.GetString("host.port")
+func (c *conf) setPort() {
+	port := c.hocon.GetString("host.port")
 	if len(port) == 0 {
 		log.Panic("port environment variable not found")
 	}
 
-	Port = port
+	c.Port = port
 }
 
-func setLogPath() {
-	LogPath = config.GetString("log-path")
+func (c *conf) setLogPath() {
+	c.LogPath = c.hocon.GetString("log-path")
 }
 
-func setDBHost() {
-	dbHost := config.GetString("db.host")
+func (c *conf) setDBHost() {
+	dbHost := c.hocon.GetString("db.host")
 	if len(dbHost) == 0 {
 		log.Panic("database host environment variable not found")
 	}
 
-	DBHost = dbHost
+	c.DBHost = dbHost
 }
 
-func setDBPort() {
-	dbPort := config.GetString("db.port")
+func (c *conf) setDBPort() {
+	dbPort := c.hocon.GetString("db.port")
 	if len(dbPort) == 0 {
 		log.Panic("database port environment variable not found")
 	}
 
-	DBPort = dbPort
+	c.DBPort = dbPort
 }
 
-func setDBName() {
-	dbName := config.GetString("db.name")
+func (c *conf) setDBName() {
+	dbName := c.hocon.GetString("db.name")
 
 	if len(dbName) == 0 {
 		log.Panic("database name environment variable not found")
 	}
 
-	DBName = dbName
+	c.DBName = dbName
 }
 
-func setDBUser() {
-	dbUser := config.GetString("db.user")
+func (c *conf) setDBUser() {
+	dbUser := c.hocon.GetString("db.user")
 	if len(dbUser) == 0 {
 		log.Panic("database user environment variable not found")
 	}
 
-	DBUser = dbUser
+	c.DBUser = dbUser
 }
 
-func setDBPassword() {
-	dbPassword := config.GetString("db.password")
+func (c *conf) setDBPassword() {
+	dbPassword := c.hocon.GetString("db.password")
 	if len(dbPassword) == 0 {
 		log.Panic("database password environment variable not found")
 	}
 
-	DBPassword = dbPassword
+	c.DBPassword = dbPassword
 }
 
-func setCORSAllowedURLs() {
-	corsAllowedURLs := config.GetString("cors.urls")
+func (c *conf) setCORSAllowedURLs() {
+	corsAllowedURLs := c.hocon.GetString("cors.urls")
 	if len(corsAllowedURLs) == 0 {
 		log.Panic("cors allowed urls environment variable not found")
 	}
 
-	CORSAllowedURLs = corsAllowedURLs
+	c.CORSAllowedURLs = corsAllowedURLs
 }
