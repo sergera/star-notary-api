@@ -26,7 +26,7 @@ func NewStarAPI() *StarAPI {
 	return &StarAPI{conn, starRepo, walletRepo}
 }
 
-func (sc *StarAPI) CreateStar(w http.ResponseWriter, r *http.Request) {
+func (s *StarAPI) CreateStar(w http.ResponseWriter, r *http.Request) {
 	var e domain.Event
 
 	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
@@ -51,18 +51,18 @@ func (sc *StarAPI) CreateStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := sc.walletRepo.InsertWalletIfAbsent(m.Wallet); err != nil {
+	if err := s.walletRepo.InsertWalletIfAbsent(m.Wallet); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if err := sc.starRepo.CreateStar(m); err != nil {
+	if err := s.starRepo.CreateStar(m); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 }
 
-func (sc *StarAPI) GetStarRange(w http.ResponseWriter, r *http.Request) {
+func (s *StarAPI) GetStarRange(w http.ResponseWriter, r *http.Request) {
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
 	oldestFirst := r.URL.Query().Get("oldest-first")
@@ -88,7 +88,7 @@ func (sc *StarAPI) GetStarRange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stars, err := sc.starRepo.GetStarRange(m)
+	stars, err := s.starRepo.GetStarRange(m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
