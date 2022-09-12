@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS stars (
 	name CITEXT NOT NULL,
 	coordinates CHAR(19) UNIQUE NOT NULL,
 	is_for_sale BOOLEAN NOT NULL,
-	price_ether NUMERIC(30,18),
+	price_ether NUMERIC(77,18),
 	date_created TIMESTAMP NOT NULL,
 	owner_id BIGINT REFERENCES wallets(id) NOT NULL,
 	CONSTRAINT star_name UNIQUE (name),
