@@ -1,7 +1,29 @@
+CREATE SEQUENCE wallets_id_seq;
+CREATE FUNCTION wallets_next_id()
+	RETURNS bigint
+	LANGUAGE 'plpgsql'
+AS $BODY$
+DECLARE
+	current_epoch bigint := 1314220021721;
+	current_milliseconds bigint;
+	shard_id int := 1;
+	sequence_id bigint;
+	result bigint := 0;
+BEGIN
+	SELECT nextval('wallets_id_seq') % 1024 INTO sequence_id;
+
+	SELECT FLOOR(EXTRACT(EPOCH FROM clock_timestamp()) * 1000) INTO current_milliseconds;
+	result := (current_milliseconds - current_epoch) << 23;
+	result := result | (shard_id << 10);
+	result := result | (sequence_id);
+	return result;
+END;
+$BODY$;
+
 CREATE EXTENSION IF NOT EXISTS CITEXT;
 
 CREATE TABLE IF NOT EXISTS wallets (
-  id BIGSERIAL PRIMARY KEY,
+  id BIGINT PRIMARY KEY DEFAULT wallets_next_id(),
 	address CITEXT NOT NULL,
 	CONSTRAINT wallet_address UNIQUE (address),
 	CONSTRAINT wallet_address_length CHECK (LENGTH(address) = 42)

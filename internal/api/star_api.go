@@ -51,7 +51,7 @@ func (s *StarAPI) CreateStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.walletRepo.InsertWalletIfAbsent(m.Wallet); err != nil {
+	if err := s.walletRepo.CreateWallet(m.Wallet); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

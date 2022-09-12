@@ -12,35 +12,24 @@ func NewWalletRepository(conn *DBConnection) *WalletRepository {
 	return &WalletRepository{conn}
 }
 
-func (wr *WalletRepository) InsertWalletIfAbsent(m *domain.WalletModel) error {
-	tx, err := wr.conn.Session.Begin()
-	if err != nil {
-		return err
-	}
-
-	tx.QueryRow(
+func (wr *WalletRepository) CreateWallet(m *domain.WalletModel) error {
+	err := wr.conn.Session.QueryRow(
 		`
-		SELECT id
-		FROM wallets
-		WHERE address=$1
+		WITH inserted_wallet AS (
+			INSERT INTO wallets (address)
+			VALUES ($1)
+			ON CONFLICT (address) DO NOTHING
+			RETURNING id
+		)
+
+		SELECT * FROM inserted_wallet
+		UNION
+		SELECT id FROM wallets WHERE address=$1
 		`,
 		m.Address,
 	).Scan(&m.Id)
 
-	if m.Id == "" {
-		if err := tx.QueryRow(
-			`
-			INSERT INTO wallets(address)
-			VALUES ($1)
-			RETURNING id
-			`,
-			m.Address,
-		).Scan(&m.Id); err != nil {
-			return err
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
+	if err != nil {
 		return err
 	}
 
