@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"strconv"
 
 	"github.com/sergera/star-notary-backend/internal/domain"
 )
@@ -30,16 +29,12 @@ func (sr *StarRepository) CreateStar(m domain.StarModel) error {
 }
 
 func (sr *StarRepository) GetStarRange(m domain.StarRangeModel) ([]domain.StarModel, error) {
-	tx, err := sr.conn.Session.Begin()
-	if err != nil {
-		return nil, err
-	}
-
 	var rows *sql.Rows
+	var err error
 	if m.OldestFirst {
-		rows, err = tx.Query(
+		rows, err = sr.conn.Session.Query(
 			`
-			SELECT stars.id, stars.name, stars.coordinates, stars.is_for_sale, stars.price_ether, stars.date_created, wallets.address, wallets.id
+			SELECT stars.id, stars.name, stars.coordinates, stars.is_for_sale, stars.price_ether, stars.date_created, wallets.address
 			FROM stars, wallets
 			WHERE stars.owner_id = wallets.id
 			AND stars.id >= $1
@@ -53,46 +48,23 @@ func (sr *StarRepository) GetStarRange(m domain.StarRangeModel) ([]domain.StarMo
 		}
 		defer rows.Close()
 	} else {
-		var maxIdString string
-		tx.QueryRow(
+		rows, err = sr.conn.Session.Query(
 			`
-			SELECT id
-			FROM stars
-			ORDER BY id DESC
-			LIMIT 1
-			`,
-		).Scan(&maxIdString)
-
-		if maxIdString == "" {
-			var emptyStarSlice []domain.StarModel
-			return emptyStarSlice, nil
-		}
-
-		maxId, err := strconv.ParseInt(maxIdString, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		start, err := strconv.ParseInt(m.Start, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		end, err := strconv.ParseInt(m.End, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		rows, err = tx.Query(
-			`
-			SELECT stars.id, stars.name, stars.coordinates, stars.is_for_sale, stars.price_ether, stars.date_created, wallets.address, wallets.id
+			WITH last_star AS (
+				SELECT id
+				FROM stars
+				ORDER BY id DESC
+				LIMIT 1
+			)
+			
+			SELECT stars.id, stars.name, stars.coordinates, stars.is_for_sale, stars.price_ether, stars.date_created, wallets.address
 			FROM stars, wallets
 			WHERE stars.owner_id = wallets.id
-			AND stars.id >= $1
-			AND stars.id <= $2
+			AND stars.id <= ((SELECT id FROM last_star) - ($1 - 1))
+			AND stars.id >= ((SELECT id FROM last_star) - ($2 - 1))
 			ORDER BY stars.id DESC
 			`,
-			maxId-(end-1), maxId-(start-1),
+			m.Start, m.End,
 		)
 		if err != nil {
 			return nil, err
@@ -105,7 +77,7 @@ func (sr *StarRepository) GetStarRange(m domain.StarRangeModel) ([]domain.StarMo
 		st := domain.StarModel{
 			Wallet: &domain.WalletModel{},
 		}
-		err := rows.Scan(&st.TokenId, &st.Name, &st.Coordinates, &st.IsForSale, &st.Price, &st.Date, &st.Wallet.Address, &st.Wallet.Id)
+		err := rows.Scan(&st.TokenId, &st.Name, &st.Coordinates, &st.IsForSale, &st.Price, &st.Date, &st.Wallet.Address)
 		if err != nil {
 			return nil, err
 		}
@@ -113,10 +85,6 @@ func (sr *StarRepository) GetStarRange(m domain.StarRangeModel) ([]domain.StarMo
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
