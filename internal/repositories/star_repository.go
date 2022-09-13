@@ -15,13 +15,32 @@ func NewStarRepository(conn *DBConnection) *StarRepository {
 }
 
 func (sr *StarRepository) CreateStar(m domain.StarModel) error {
-	if _, err := sr.conn.Session.Exec(
+	tx, err := sr.conn.Session.Begin()
+	if err != nil {
+		return err
+	}
+
+	if _, err := tx.Exec(
 		`
 		INSERT INTO stars (id, name, coordinates, is_for_sale, price_ether, date_created, owner_wallet_id)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		`,
 		m.TokenId, m.Name, m.Coordinates, m.IsForSale, m.Price, m.Date, m.Wallet.Id,
 	); err != nil {
+		return err
+	}
+
+	if _, err := tx.Exec(
+		`
+		INSERT INTO names_history (star_id, name, date_set, owner_wallet_id)
+		VALUES ($1, $2, $3, $4)
+		`,
+		m.TokenId, m.Name, m.Date, m.Wallet.Id,
+	); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 
