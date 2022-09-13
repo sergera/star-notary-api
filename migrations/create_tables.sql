@@ -59,7 +59,6 @@ CREATE TABLE IF NOT EXISTS names_history (
 	date_set TIMESTAMP NOT NULL,
 	name CITEXT NOT NULL,
 	star_id BIGINT REFERENCES stars(id) NOT NULL,
-	owner_wallet_id INTEGER REFERENCES wallets(id) NOT NULL,
-	CONSTRAINT star_name_history UNIQUE (name),
+	owner_wallet_id BIGINT REFERENCES wallets(id) NOT NULL,
 	CONSTRAINT star_name_history_length CHECK (LENGTH(name) >= 4 AND LENGTH(name) <= 32)
 );
