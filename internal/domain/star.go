@@ -93,8 +93,8 @@ func (s StarModel) ValidateName() error {
 func (s StarModel) ValidatePrice() error {
 	errorMsg := "invalid price"
 
-	integerPattern := "^[1-9][0-9]*$"
-	fractionPattern := "^[0-9]*[1-9]$"
+	integerPattern := "^[1-9][0-9]{0,58}$"
+	fractionPattern := "^[0-9]{0,17}[1-9]$"
 
 	priceSlice := strings.Split(s.Price, ".")
 
@@ -115,6 +115,7 @@ func (s StarModel) ValidatePrice() error {
 
 		return errors.New(errorMsg)
 	case 2:
+		integerPattern = "^0$|[1-9][0-9]{0,58}$"
 		if len(priceSlice[0]) > 12 {
 			return errors.New(errorMsg)
 		}
