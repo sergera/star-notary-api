@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS stars (
 	is_for_sale BOOLEAN NOT NULL,
 	price_ether NUMERIC(77,18),
 	date_created TIMESTAMP NOT NULL,
-	owner_id BIGINT REFERENCES wallets(id) NOT NULL,
+	owner_wallet_id BIGINT REFERENCES wallets(id) NOT NULL,
 	CONSTRAINT star_name UNIQUE (name),
 	CONSTRAINT star_name_length CHECK (LENGTH(name) >= 4 AND LENGTH(name) <= 32),
 	CONSTRAINT star_coordinates UNIQUE (coordinates)
@@ -51,15 +51,15 @@ CREATE TABLE IF NOT EXISTS sales_history (
 	date_sold TIMESTAMP,
 	price_ether NUMERIC(30,18) NOT NULL,
 	star_id BIGINT REFERENCES stars(id) NOT NULL,
-	seller_id BIGINT REFERENCES wallets(id) NOT NULL,
-	buyer_id BIGINT REFERENCES wallets(id) NOT NULL
+	seller_wallet_id BIGINT REFERENCES wallets(id) NOT NULL,
+	buyer_wallet_id BIGINT REFERENCES wallets(id) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS names_history (
 	date_set TIMESTAMP NOT NULL,
 	name CITEXT NOT NULL,
 	star_id BIGINT REFERENCES stars(id) NOT NULL,
-	owner_id INTEGER REFERENCES wallets(id) NOT NULL,
+	owner_wallet_id INTEGER REFERENCES wallets(id) NOT NULL,
 	CONSTRAINT star_name_history UNIQUE (name),
 	CONSTRAINT star_name_history_length CHECK (LENGTH(name) >= 4 AND LENGTH(name) <= 32)
 );

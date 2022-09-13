@@ -17,7 +17,7 @@ func NewStarRepository(conn *DBConnection) *StarRepository {
 func (sr *StarRepository) CreateStar(m domain.StarModel) error {
 	if _, err := sr.conn.Session.Exec(
 		`
-		INSERT INTO stars (id, name, coordinates, is_for_sale, price_ether, date_created, owner_id)
+		INSERT INTO stars (id, name, coordinates, is_for_sale, price_ether, date_created, owner_wallet_id)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		`,
 		m.TokenId, m.Name, m.Coordinates, m.IsForSale, m.Price, m.Date, m.Wallet.Id,
@@ -51,7 +51,7 @@ func (sr *StarRepository) GetStarRange(m domain.StarRangeModel) ([]domain.StarMo
 			`
 			SELECT stars.id, stars.name, stars.coordinates, stars.is_for_sale, stars.price_ether, stars.date_created, wallets.address
 			FROM stars, wallets
-			WHERE stars.owner_id = wallets.id
+			WHERE stars.owner_wallet_id = wallets.id
 			AND stars.id >= $1
 			AND stars.id <= $2
 			ORDER BY stars.id ASC
@@ -74,7 +74,7 @@ func (sr *StarRepository) GetStarRange(m domain.StarRangeModel) ([]domain.StarMo
 			
 			SELECT stars.id, stars.name, stars.coordinates, stars.is_for_sale, stars.price_ether, stars.date_created, wallets.address
 			FROM stars, wallets
-			WHERE stars.owner_id = wallets.id
+			WHERE stars.owner_wallet_id = wallets.id
 			AND stars.id <= ((SELECT id FROM last_star) - ($1 - 1))
 			AND stars.id >= ((SELECT id FROM last_star) - ($2 - 1))
 			ORDER BY stars.id DESC
