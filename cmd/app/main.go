@@ -24,6 +24,7 @@ func main() {
 	mux.HandleFunc("/create", starAPI.CreateStar)
 	mux.HandleFunc("/star-range", api.CorsHandler(starAPI.GetStarRange))
 	mux.HandleFunc("/set-price", starAPI.SetPrice)
+	mux.HandleFunc("/set-name", starAPI.SetName)
 
 	srv := &http.Server{
 		Addr:    ":" + conf.Port,

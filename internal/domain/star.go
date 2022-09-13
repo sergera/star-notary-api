@@ -13,6 +13,7 @@ const (
 	Unknown Action = 0
 	Create  Action = iota + 1
 	SetPrice
+	SetName
 )
 
 type StarModel struct {
@@ -47,6 +48,14 @@ func (s StarModel) Validate() error {
 			return err
 		}
 		if err := s.ValidatePrice(); err != nil {
+			return err
+		}
+		return nil
+	case SetName:
+		if err := s.ValidateTokenId(); err != nil {
+			return err
+		}
+		if err := s.ValidateName(); err != nil {
 			return err
 		}
 		return nil

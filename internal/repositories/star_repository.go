@@ -62,6 +62,41 @@ func (sr *StarRepository) SetPrice(m domain.StarModel) error {
 	return nil
 }
 
+func (sr *StarRepository) SetName(m domain.StarModel) error {
+	tx, err := sr.conn.Session.Begin()
+	if err != nil {
+		return err
+	}
+
+	if err := tx.QueryRow(
+		`
+		UPDATE stars
+		SET name = $2
+		WHERE id = $1
+		RETURNING owner_wallet_id
+		`,
+		m.TokenId, m.Name,
+	).Scan(&m.Wallet.Id); err != nil {
+		return err
+	}
+
+	if _, err := tx.Exec(
+		`
+		INSERT INTO names_history (star_id, name, date_set, owner_wallet_id)
+		VALUES ($1, $2, $3, $4)
+		`,
+		m.TokenId, m.Name, m.Date, m.Wallet.Id,
+	); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (sr *StarRepository) GetStarRange(m domain.StarRangeModel) ([]domain.StarModel, error) {
 	var rows *sql.Rows
 	var err error

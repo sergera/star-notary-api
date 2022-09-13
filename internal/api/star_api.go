@@ -89,6 +89,33 @@ func (s *StarAPI) SetPrice(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *StarAPI) SetName(w http.ResponseWriter, r *http.Request) {
+	var e domain.Event
+
+	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var m = domain.StarModel{
+		TokenId: e.TokenId,
+		Name:    e.Name,
+		Date:    e.Date,
+		Wallet:  new(domain.WalletModel),
+		Action:  domain.SetName,
+	}
+
+	if err := m.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := s.starRepo.SetName(m); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+}
+
 func (s *StarAPI) GetStarRange(w http.ResponseWriter, r *http.Request) {
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
