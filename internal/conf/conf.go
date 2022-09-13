@@ -64,7 +64,7 @@ func (c *conf) setPort() {
 }
 
 func (c *conf) setLogPath() {
-	c.LogPath = c.hocon.GetString("log-path")
+	c.LogPath = c.hocon.GetString("log.path")
 }
 
 func (c *conf) setDBHost() {
