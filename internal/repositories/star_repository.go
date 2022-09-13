@@ -28,6 +28,21 @@ func (sr *StarRepository) CreateStar(m domain.StarModel) error {
 	return nil
 }
 
+func (sr *StarRepository) SetPrice(m domain.StarModel) error {
+	if _, err := sr.conn.Session.Exec(
+		`
+		UPDATE stars
+		SET is_for_sale = $2, price_ether = $3
+		WHERE id = $1
+		`,
+		m.TokenId, m.IsForSale, m.Price,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (sr *StarRepository) GetStarRange(m domain.StarRangeModel) ([]domain.StarModel, error) {
 	var rows *sql.Rows
 	var err error

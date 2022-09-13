@@ -7,6 +7,14 @@ import (
 	"time"
 )
 
+type Action int8
+
+const (
+	Unknown Action = 0
+	Create  Action = iota + 1
+	SetPrice
+)
+
 type StarModel struct {
 	TokenId     string       `json:"token_id"`
 	Coordinates string       `json:"coordinates"`
@@ -15,27 +23,36 @@ type StarModel struct {
 	IsForSale   bool         `json:"is_for_sale"`
 	Date        time.Time    `json:"date"`
 	Wallet      *WalletModel `json:"wallet"`
+	Action      Action       `json:"action"`
 }
 
 func (s StarModel) Validate() error {
-	if err := s.ValidateTokenId(); err != nil {
-		return err
-	}
-	if err := s.Wallet.Validate(); err != nil {
-		return err
-	}
-	if err := s.ValidateCoordinates(); err != nil {
-		return err
-	}
-	if err := s.ValidateName(); err != nil {
-		return err
-	}
-	if s.IsForSale {
+	switch s.Action {
+	case Create:
+		if err := s.ValidateTokenId(); err != nil {
+			return err
+		}
+		if err := s.Wallet.Validate(); err != nil {
+			return err
+		}
+		if err := s.ValidateCoordinates(); err != nil {
+			return err
+		}
+		if err := s.ValidateName(); err != nil {
+			return err
+		}
+		return nil
+	case SetPrice:
+		if err := s.ValidateTokenId(); err != nil {
+			return err
+		}
 		if err := s.ValidatePrice(); err != nil {
 			return err
 		}
+		return nil
+	default:
+		return errors.New("invalid action")
 	}
-	return nil
 }
 
 func (s StarModel) ValidateTokenId() error {

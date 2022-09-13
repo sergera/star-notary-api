@@ -41,6 +41,7 @@ func (s *StarAPI) CreateStar(w http.ResponseWriter, r *http.Request) {
 		Price:       "0",
 		IsForSale:   false,
 		Date:        e.Date,
+		Action:      domain.Create,
 		Wallet: &domain.WalletModel{
 			Address: e.Owner,
 		},
@@ -57,6 +58,32 @@ func (s *StarAPI) CreateStar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.starRepo.CreateStar(m); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+}
+
+func (s *StarAPI) SetPrice(w http.ResponseWriter, r *http.Request) {
+	var e domain.Event
+
+	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var m = domain.StarModel{
+		TokenId:   e.TokenId,
+		Price:     e.Price,
+		IsForSale: true,
+		Action:    domain.SetPrice,
+	}
+
+	if err := m.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := s.starRepo.SetPrice(m); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
