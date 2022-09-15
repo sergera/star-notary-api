@@ -77,6 +77,45 @@ func (sr *StarRepository) RemoveFromSale(m domain.StarModel) error {
 	return nil
 }
 
+func (sr *StarRepository) Sell(m domain.StarModel) error {
+	tx, err := sr.conn.Session.Begin()
+	if err != nil {
+		return err
+	}
+
+	var oldOwnerWalletId uint64
+	var soldPrice string
+
+	if err := tx.QueryRow(
+		`
+		UPDATE stars new
+		SET owner_wallet_id = $2, is_for_sale = false, price_ether = 0
+		FROM (SELECT id, owner_wallet_id, price_ether FROM stars WHERE id = $1 FOR UPDATE) old
+		WHERE new.id = old.id
+		RETURNING old.owner_wallet_id, old.price_ether
+		`,
+		m.TokenId, m.Wallet.Id,
+	).Scan(&oldOwnerWalletId, &soldPrice); err != nil {
+		return err
+	}
+
+	if _, err := tx.Exec(
+		`
+		INSERT INTO sales_history (star_id, price_ether, date_sold, seller_wallet_id, buyer_wallet_id)
+		VALUES ($1, $2, $3, $4, $5)
+		`,
+		m.TokenId, soldPrice, m.Date, oldOwnerWalletId, m.Wallet.Id,
+	); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (sr *StarRepository) SetName(m domain.StarModel) error {
 	tx, err := sr.conn.Session.Begin()
 	if err != nil {

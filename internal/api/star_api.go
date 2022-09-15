@@ -115,6 +115,39 @@ func (s *StarAPI) RemoveFromSale(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *StarAPI) Sell(w http.ResponseWriter, r *http.Request) {
+	var e domain.Event
+
+	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var m = domain.StarModel{
+		TokenId: e.TokenId,
+		Price:   e.Price,
+		Action:  domain.Sell,
+		Wallet: &domain.WalletModel{
+			Address: e.Owner,
+		},
+	}
+
+	if err := m.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := s.walletRepo.CreateWallet(m.Wallet); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := s.starRepo.Sell(m); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+}
+
 func (s *StarAPI) SetName(w http.ResponseWriter, r *http.Request) {
 	var e domain.Event
 

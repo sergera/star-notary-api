@@ -15,6 +15,7 @@ const (
 	SetPrice
 	SetName
 	RemoveFromSale
+	Sell
 )
 
 type StarModel struct {
@@ -62,6 +63,14 @@ func (s StarModel) Validate() error {
 		return nil
 	case RemoveFromSale:
 		if err := s.ValidateTokenId(); err != nil {
+			return err
+		}
+		return nil
+	case Sell:
+		if err := s.ValidateTokenId(); err != nil {
+			return err
+		}
+		if err := s.Wallet.Validate(); err != nil {
 			return err
 		}
 		return nil
