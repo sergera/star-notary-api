@@ -89,6 +89,32 @@ func (s *StarAPI) SetPrice(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *StarAPI) RemoveFromSale(w http.ResponseWriter, r *http.Request) {
+	var e domain.Event
+
+	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var m = domain.StarModel{
+		TokenId:   e.TokenId,
+		IsForSale: false,
+		Price:     "0",
+		Action:    domain.RemoveFromSale,
+	}
+
+	if err := m.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := s.starRepo.RemoveFromSale(m); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+}
+
 func (s *StarAPI) SetName(w http.ResponseWriter, r *http.Request) {
 	var e domain.Event
 
