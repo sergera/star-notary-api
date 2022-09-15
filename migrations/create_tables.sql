@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS stars (
 	date_created TIMESTAMP NOT NULL,
 	owner_wallet_id BIGINT REFERENCES wallets(id) NOT NULL,
 	CONSTRAINT star_name UNIQUE (name),
-	CONSTRAINT star_name_length CHECK (LENGTH(name) >= 4 AND LENGTH(name) <= 32),
+	CONSTRAINT star_name_length CHECK (LENGTH(name) >= 2 AND LENGTH(name) <= 32),
 	CONSTRAINT star_coordinates UNIQUE (coordinates)
 );
 
@@ -60,5 +60,5 @@ CREATE TABLE IF NOT EXISTS names_history (
 	name CITEXT NOT NULL,
 	star_id BIGINT REFERENCES stars(id) NOT NULL,
 	owner_wallet_id BIGINT REFERENCES wallets(id) NOT NULL,
-	CONSTRAINT star_name_history_length CHECK (LENGTH(name) >= 4 AND LENGTH(name) <= 32)
+	CONSTRAINT star_name_history_length CHECK (LENGTH(name) >= 2 AND LENGTH(name) <= 32)
 );

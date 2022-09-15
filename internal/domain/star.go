@@ -113,7 +113,7 @@ func (s StarModel) ValidateName() error {
 	errorMsg := "invalid name"
 
 	nameLength := len(s.Name)
-	if nameLength > 32 || nameLength < 4 {
+	if nameLength > 32 || nameLength < 2 {
 		return errors.New(errorMsg)
 	}
 
