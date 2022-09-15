@@ -115,7 +115,7 @@ func (s *StarAPI) RemoveFromSale(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *StarAPI) Sell(w http.ResponseWriter, r *http.Request) {
+func (s *StarAPI) Purchase(w http.ResponseWriter, r *http.Request) {
 	var e domain.Event
 
 	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
@@ -126,7 +126,8 @@ func (s *StarAPI) Sell(w http.ResponseWriter, r *http.Request) {
 	var m = domain.StarModel{
 		TokenId: e.TokenId,
 		Price:   e.Price,
-		Action:  domain.Sell,
+		Date:    e.Date,
+		Action:  domain.Purchase,
 		Wallet: &domain.WalletModel{
 			Address: e.Owner,
 		},
@@ -142,7 +143,7 @@ func (s *StarAPI) Sell(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.starRepo.Sell(m); err != nil {
+	if err := s.starRepo.Purchase(m); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

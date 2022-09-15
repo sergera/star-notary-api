@@ -26,7 +26,7 @@ func main() {
 	mux.HandleFunc("/set-name", starAPI.SetName)
 	mux.HandleFunc("/set-price", starAPI.SetPrice)
 	mux.HandleFunc("/remove-from-sale", starAPI.RemoveFromSale)
-	mux.HandleFunc("/sell", starAPI.Sell)
+	mux.HandleFunc("/purchase", starAPI.Purchase)
 
 	srv := &http.Server{
 		Addr:    ":" + conf.Port,

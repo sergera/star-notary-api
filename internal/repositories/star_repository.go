@@ -77,7 +77,7 @@ func (sr *StarRepository) RemoveFromSale(m domain.StarModel) error {
 	return nil
 }
 
-func (sr *StarRepository) Sell(m domain.StarModel) error {
+func (sr *StarRepository) Purchase(m domain.StarModel) error {
 	tx, err := sr.conn.Session.Begin()
 	if err != nil {
 		return err
