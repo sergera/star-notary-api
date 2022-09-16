@@ -22,7 +22,7 @@ type conf struct {
 	CORSAllowedURLs string
 }
 
-func GetConf() *conf {
+func ConfSingleton() *conf {
 	once.Do(func() {
 		var c *conf = &conf{}
 		c.setup()
@@ -33,14 +33,14 @@ func GetConf() *conf {
 
 func (c *conf) setup() {
 	c.parseHOCONConfigFile()
-	c.setPort()
-	c.setLogPath()
-	c.setDBHost()
-	c.setDBPort()
-	c.setDBName()
-	c.setDBUser()
-	c.setDBPassword()
-	c.setCORSAllowedURLs()
+	c.readPort()
+	c.readLogPath()
+	c.readDBHost()
+	c.readDBPort()
+	c.readDBName()
+	c.readDBUser()
+	c.readDBPassword()
+	c.readCORSAllowedURLs()
 }
 
 func (c *conf) parseHOCONConfigFile() {
@@ -54,7 +54,7 @@ func (c *conf) parseHOCONConfigFile() {
 	c.hocon = hocon
 }
 
-func (c *conf) setPort() {
+func (c *conf) readPort() {
 	port := c.hocon.GetString("host.port")
 	if len(port) == 0 {
 		log.Panic("port environment variable not found")
@@ -63,11 +63,11 @@ func (c *conf) setPort() {
 	c.Port = port
 }
 
-func (c *conf) setLogPath() {
+func (c *conf) readLogPath() {
 	c.LogPath = c.hocon.GetString("log.path")
 }
 
-func (c *conf) setDBHost() {
+func (c *conf) readDBHost() {
 	dbHost := c.hocon.GetString("db.host")
 	if len(dbHost) == 0 {
 		log.Panic("database host environment variable not found")
@@ -76,7 +76,7 @@ func (c *conf) setDBHost() {
 	c.DBHost = dbHost
 }
 
-func (c *conf) setDBPort() {
+func (c *conf) readDBPort() {
 	dbPort := c.hocon.GetString("db.port")
 	if len(dbPort) == 0 {
 		log.Panic("database port environment variable not found")
@@ -85,7 +85,7 @@ func (c *conf) setDBPort() {
 	c.DBPort = dbPort
 }
 
-func (c *conf) setDBName() {
+func (c *conf) readDBName() {
 	dbName := c.hocon.GetString("db.name")
 
 	if len(dbName) == 0 {
@@ -95,7 +95,7 @@ func (c *conf) setDBName() {
 	c.DBName = dbName
 }
 
-func (c *conf) setDBUser() {
+func (c *conf) readDBUser() {
 	dbUser := c.hocon.GetString("db.user")
 	if len(dbUser) == 0 {
 		log.Panic("database user environment variable not found")
@@ -104,7 +104,7 @@ func (c *conf) setDBUser() {
 	c.DBUser = dbUser
 }
 
-func (c *conf) setDBPassword() {
+func (c *conf) readDBPassword() {
 	dbPassword := c.hocon.GetString("db.password")
 	if len(dbPassword) == 0 {
 		log.Panic("database password environment variable not found")
@@ -113,7 +113,7 @@ func (c *conf) setDBPassword() {
 	c.DBPassword = dbPassword
 }
 
-func (c *conf) setCORSAllowedURLs() {
+func (c *conf) readCORSAllowedURLs() {
 	corsAllowedURLs := c.hocon.GetString("cors.urls")
 	if len(corsAllowedURLs) == 0 {
 		log.Panic("cors allowed urls environment variable not found")

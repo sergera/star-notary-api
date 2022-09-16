@@ -18,7 +18,7 @@ type StarAPI struct {
 
 func NewStarAPI() *StarAPI {
 	/* TODO: resolve database session lifecycle */
-	conf := conf.GetConf()
+	conf := conf.ConfSingleton()
 	conn := repositories.NewDBConnection(conf.DBHost, conf.DBPort, conf.DBName, conf.DBUser, conf.DBPassword, false)
 	conn.Open()
 	starRepo := repositories.NewStarRepository(conn)
@@ -220,7 +220,7 @@ func (s *StarAPI) GetStarRange(w http.ResponseWriter, r *http.Request) {
 }
 
 func CorsHandler(h http.HandlerFunc) http.HandlerFunc {
-	conf := conf.GetConf()
+	conf := conf.ConfSingleton()
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", conf.CORSAllowedURLs)
 		if r.Method == "OPTIONS" {
