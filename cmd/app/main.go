@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/sergera/star-notary-backend/internal/api"
 	"github.com/sergera/star-notary-backend/internal/conf"
+	"github.com/sergera/star-notary-backend/pkg/cors"
 )
 
 func init() {
@@ -14,14 +16,16 @@ func init() {
 }
 
 func main() {
-
 	conf := conf.ConfSingleton()
 
 	mux := http.NewServeMux()
-
 	starAPI := api.NewStarAPI()
+	cors := cors.NewCors(
+		strings.Split(conf.CORSAllowedURLs, ","),
+		[]cors.HTTPVerb{cors.Options, cors.Get},
+	)
 
-	mux.HandleFunc("/star-range", api.CorsHandler(starAPI.GetStarRange))
+	mux.HandleFunc("/star-range", cors.WrapHandlerFunc(starAPI.GetStarRange))
 	mux.HandleFunc("/create", starAPI.CreateStar)
 	mux.HandleFunc("/set-name", starAPI.SetName)
 	mux.HandleFunc("/set-price", starAPI.SetPrice)

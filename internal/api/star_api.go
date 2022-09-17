@@ -218,17 +218,3 @@ func (s *StarAPI) GetStarRange(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(starsInBytes)
 }
-
-func CorsHandler(h http.HandlerFunc) http.HandlerFunc {
-	conf := conf.ConfSingleton()
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Access-Control-Allow-Origin", conf.CORSAllowedURLs)
-		if r.Method == "OPTIONS" {
-			//handle preflight in here
-			w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Accept")
-			w.Header().Add("Access-Control-Allow-Methods", "GET, OPTIONS")
-		} else {
-			h.ServeHTTP(w, r)
-		}
-	}
-}
