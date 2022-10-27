@@ -8,6 +8,7 @@ import (
 
 	"github.com/sergera/star-notary-backend/internal/api"
 	"github.com/sergera/star-notary-backend/internal/conf"
+	"github.com/sergera/star-notary-backend/internal/notifier"
 	"github.com/sergera/star-notary-backend/pkg/cors"
 )
 
@@ -32,12 +33,15 @@ func main() {
 	mux.HandleFunc("/remove-from-sale", starAPI.RemoveFromSale)
 	mux.HandleFunc("/purchase", starAPI.Purchase)
 
+	starNotifier := notifier.StarNotifierSingleton()
+	mux.HandleFunc("/notify-stars", cors.WrapHandlerFunc(starNotifier.PushStars))
+
 	srv := &http.Server{
 		Addr:    ":" + conf.Port,
 		Handler: mux,
 	}
 
-	fmt.Printf("Staring application on port %s", conf.Port)
+	fmt.Printf("Starting application on port %s", conf.Port)
 
 	err := srv.ListenAndServe()
 	if err != nil {

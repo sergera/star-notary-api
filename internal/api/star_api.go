@@ -7,6 +7,7 @@ import (
 
 	"github.com/sergera/star-notary-backend/internal/conf"
 	"github.com/sergera/star-notary-backend/internal/domain"
+	"github.com/sergera/star-notary-backend/internal/notifier"
 	"github.com/sergera/star-notary-backend/internal/repositories"
 )
 
@@ -14,6 +15,7 @@ type StarAPI struct {
 	conn       *repositories.DBConnection
 	starRepo   *repositories.StarRepository
 	walletRepo *repositories.WalletRepository
+	notifier   *notifier.StarNotifier
 }
 
 func NewStarAPI() *StarAPI {
@@ -23,7 +25,8 @@ func NewStarAPI() *StarAPI {
 	conn.Open()
 	starRepo := repositories.NewStarRepository(conn)
 	walletRepo := repositories.NewWalletRepository(conn)
-	return &StarAPI{conn, starRepo, walletRepo}
+	starNotifier := notifier.StarNotifierSingleton()
+	return &StarAPI{conn, starRepo, walletRepo, starNotifier}
 }
 
 func (s *StarAPI) CreateStar(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +90,8 @@ func (s *StarAPI) SetPrice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	s.notifier.AppendStar(m)
 }
 
 func (s *StarAPI) RemoveFromSale(w http.ResponseWriter, r *http.Request) {
@@ -113,6 +118,8 @@ func (s *StarAPI) RemoveFromSale(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	s.notifier.AppendStar(m)
 }
 
 func (s *StarAPI) Purchase(w http.ResponseWriter, r *http.Request) {
@@ -147,6 +154,8 @@ func (s *StarAPI) Purchase(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	s.notifier.AppendStar(m)
 }
 
 func (s *StarAPI) SetName(w http.ResponseWriter, r *http.Request) {
@@ -174,6 +183,8 @@ func (s *StarAPI) SetName(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	s.notifier.AppendStar(m)
 }
 
 func (s *StarAPI) GetStarRange(w http.ResponseWriter, r *http.Request) {

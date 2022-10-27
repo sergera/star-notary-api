@@ -10,8 +10,8 @@ import (
 type Action int8
 
 const (
-	Unknown Action = 0
-	Create  Action = iota + 1
+	Unknown Action = iota
+	Create
 	SetPrice
 	SetName
 	RemoveFromSale
