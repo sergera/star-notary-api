@@ -34,7 +34,7 @@ func main() {
 	mux.HandleFunc("/purchase", starAPI.Purchase)
 
 	starNotifier := notifier.StarNotifierSingleton()
-	mux.HandleFunc("/notify-stars", cors.WrapHandlerFunc(starNotifier.PushStars))
+	mux.HandleFunc("/notify-stars", cors.WrapHandlerFunc(starNotifier.Subscribe))
 
 	srv := &http.Server{
 		Addr:    ":" + conf.Port,

@@ -91,7 +91,7 @@ func (s *StarAPI) SetPrice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.notifier.AppendStar(m)
+	s.notifier.Publish(m)
 }
 
 func (s *StarAPI) RemoveFromSale(w http.ResponseWriter, r *http.Request) {
@@ -119,7 +119,7 @@ func (s *StarAPI) RemoveFromSale(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.notifier.AppendStar(m)
+	s.notifier.Publish(m)
 }
 
 func (s *StarAPI) Purchase(w http.ResponseWriter, r *http.Request) {
@@ -155,7 +155,7 @@ func (s *StarAPI) Purchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.notifier.AppendStar(m)
+	s.notifier.Publish(m)
 }
 
 func (s *StarAPI) SetName(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +184,7 @@ func (s *StarAPI) SetName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.notifier.AppendStar(m)
+	s.notifier.Publish(m)
 }
 
 func (s *StarAPI) GetStarRange(w http.ResponseWriter, r *http.Request) {
