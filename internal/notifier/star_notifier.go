@@ -12,7 +12,7 @@ var once sync.Once
 var instance *StarNotifier
 
 type StarNotifier struct {
-	pool *websocket.Pool
+	pool websocket.PoolInterface
 }
 
 func StarNotifierSingleton() *StarNotifier {
@@ -30,9 +30,9 @@ func (n *StarNotifier) Subscribe(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	n.pool.Register <- websocket.NewConnection(websocket.NewWebsocketConnWrapper(ws), n.pool)
+	n.pool.RegisterConnection(websocket.NewConnection(websocket.NewWebsocketConnWrapper(ws), n.pool))
 }
 
 func (n *StarNotifier) Publish(msg interface{}) {
-	n.pool.BroadcastJSON <- msg
+	n.pool.BroadcastJSONMessage(msg)
 }

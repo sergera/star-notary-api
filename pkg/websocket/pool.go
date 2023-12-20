@@ -2,7 +2,9 @@ package websocket
 
 type PoolInterface interface {
 	Start()
-	UnregisterConnection(c *Connection)
+	RegisterConnection(ConnectionInterface)
+	UnregisterConnection(ConnectionInterface)
+	BroadcastJSONMessage(interface{})
 }
 
 type Pool struct {
@@ -38,6 +40,14 @@ func (pool *Pool) Start() {
 	}
 }
 
-func (pool *Pool) UnregisterConnection(conn *Connection) {
+func (pool *Pool) RegisterConnection(conn ConnectionInterface) {
+	pool.Register <- conn
+}
+
+func (pool *Pool) UnregisterConnection(conn ConnectionInterface) {
 	pool.Unregister <- conn
+}
+
+func (pool *Pool) BroadcastJSONMessage(msg interface{}) {
+	pool.BroadcastJSON <- msg
 }

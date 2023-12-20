@@ -13,9 +13,13 @@ type MockPool struct {
 
 func (m *MockPool) Start() {}
 
-func (m *MockPool) UnregisterConnection(c *Connection) {
+func (m *MockPool) RegisterConnection(ConnectionInterface) {}
+
+func (m *MockPool) UnregisterConnection(ConnectionInterface) {
 	m.UnregisterCalled = true
 }
+
+func (m *MockPool) BroadcastJSONMessage(interface{}) {}
 
 type MockWebsocketConn struct {
 	WriteJSONCalled bool
