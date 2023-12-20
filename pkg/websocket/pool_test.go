@@ -4,36 +4,7 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"nhooyr.io/websocket"
 )
-
-type MockConnection struct {
-	WriteJSONCalled bool
-	ReceivedMessage interface{}
-	wg              *sync.WaitGroup
-}
-
-func (m *MockConnection) WriteText(body []byte) error {
-	m.ReceivedMessage = body
-	return nil
-}
-
-func (m *MockConnection) WriteBinary(body []byte) error {
-	m.ReceivedMessage = body
-	return nil
-}
-
-func (m *MockConnection) WriteJSON(body interface{}) error {
-	m.WriteJSONCalled = true
-	m.ReceivedMessage = body
-	if m.wg != nil {
-		m.wg.Done()
-	}
-	return nil
-}
-
-func (m *MockConnection) Close(status websocket.StatusCode, reason string) {}
 
 func TestPool_RegisterUnregister(t *testing.T) {
 	pool := NewPool()
