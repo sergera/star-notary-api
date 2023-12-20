@@ -20,8 +20,16 @@ type StarAPI struct {
 
 func NewStarAPI() *StarAPI {
 	/* TODO: resolve database session lifecycle */
-	conf := conf.ConfSingleton()
-	conn := repositories.NewDBConnection(conf.DBHost, conf.DBPort, conf.DBName, conf.DBUser, conf.DBPassword, false)
+	conf, err := conf.ConfSingleton()
+	var dbHost, dbPort, dbName, dbUser, dbPassword string
+	if err == nil {
+		dbHost = conf.DBHost
+		dbPort = conf.DBPort
+		dbName = conf.DBName
+		dbUser = conf.DBUser
+		dbPassword = conf.DBPassword
+	}
+	conn := repositories.NewDBConnection(dbHost, dbPort, dbName, dbUser, dbPassword, false)
 	conn.Open()
 	starRepo := repositories.NewStarRepository(conn)
 	walletRepo := repositories.NewWalletRepository(conn)

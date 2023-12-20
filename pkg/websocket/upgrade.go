@@ -14,9 +14,14 @@ var wsOptionsInitialized bool
 
 func getWSOptions() *websocket.AcceptOptions {
 	if !wsOptionsInitialized {
+		conf, err := conf.ConfSingleton()
+		var originPatterns []string
+		if err == nil {
+			originPatterns = strings.Split(conf.CORSAllowedURLs, ",")
+		}
 		wsOptions = &websocket.AcceptOptions{
 			InsecureSkipVerify: true,
-			OriginPatterns:     strings.Split(conf.ConfSingleton().CORSAllowedURLs, ","),
+			OriginPatterns:     originPatterns,
 		}
 		wsOptionsInitialized = true
 	}

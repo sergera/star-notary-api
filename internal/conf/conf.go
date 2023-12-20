@@ -9,6 +9,7 @@ import (
 
 var once sync.Once
 var instance *conf
+var err error
 
 type conf struct {
 	hocon           *hocon.Config
@@ -22,17 +23,27 @@ type conf struct {
 	CORSAllowedURLs string
 }
 
-func ConfSingleton() *conf {
+func ConfSingleton() (*conf, error) {
 	once.Do(func() {
 		var c *conf = &conf{}
-		c.setup()
+		var e = c.setup()
 		instance = c
+		err = e
 	})
-	return instance
+
+	if instance != nil {
+		return instance, nil
+	}
+
+	return nil, err
 }
 
-func (c *conf) setup() {
-	c.parseHOCONConfigFile()
+func (c *conf) setup() error {
+	err := c.parseHOCONConfigFile()
+	if err != nil {
+		log.Printf("error while parsing configuration file: %s", err)
+		return err
+	}
 	c.readPort()
 	c.readLogPath()
 	c.readDBHost()
@@ -41,17 +52,18 @@ func (c *conf) setup() {
 	c.readDBUser()
 	c.readDBPassword()
 	c.readCORSAllowedURLs()
+	return nil
 }
 
-func (c *conf) parseHOCONConfigFile() {
+func (c *conf) parseHOCONConfigFile() error {
 	hocon, err := hocon.ParseResource("application.conf")
 	if err != nil {
-		log.Panic("error while parsing configuration file: ", err)
+		return err
 	}
 
 	log.Printf("configurations: %+v", *hocon)
-
 	c.hocon = hocon
+	return nil
 }
 
 func (c *conf) readPort() {

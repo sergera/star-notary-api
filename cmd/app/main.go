@@ -17,12 +17,18 @@ func init() {
 }
 
 func main() {
-	conf := conf.ConfSingleton()
+	conf, err := conf.ConfSingleton()
+	var originPatterns []string
+	var port string
+	if err == nil {
+		originPatterns = strings.Split(conf.CORSAllowedURLs, ",")
+		port = conf.Port
+	}
 
 	mux := http.NewServeMux()
 	starAPI := api.NewStarAPI()
 	cors := cors.NewCors(
-		strings.Split(conf.CORSAllowedURLs, ","),
+		originPatterns,
 		[]cors.HTTPVerb{cors.Options, cors.Get},
 	)
 
@@ -37,13 +43,13 @@ func main() {
 	mux.HandleFunc("/notify-stars", cors.WrapHandlerFunc(starNotifier.Subscribe))
 
 	srv := &http.Server{
-		Addr:    ":" + conf.Port,
+		Addr:    ":" + port,
 		Handler: mux,
 	}
 
-	fmt.Printf("Starting application on port %s", conf.Port)
+	fmt.Printf("Starting application on port %s", port)
 
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
