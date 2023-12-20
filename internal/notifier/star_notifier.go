@@ -30,7 +30,7 @@ func (n *StarNotifier) Subscribe(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	n.pool.Register <- websocket.NewConnection(ws, n.pool)
+	n.pool.Register <- websocket.NewConnection(websocket.NewWebsocketConnWrapper(ws), n.pool)
 }
 
 func (n *StarNotifier) Publish(msg interface{}) {

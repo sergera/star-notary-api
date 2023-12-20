@@ -1,17 +1,22 @@
 package websocket
 
+type PoolInterface interface {
+	Start()
+	UnregisterConnection(c *Connection)
+}
+
 type Pool struct {
-	Register      chan *Connection
-	Unregister    chan *Connection
-	Connections   map[*Connection]bool
+	Register      chan ConnectionInterface
+	Unregister    chan ConnectionInterface
+	Connections   map[ConnectionInterface]bool
 	BroadcastJSON chan interface{}
 }
 
 func NewPool() *Pool {
 	p := &Pool{
-		Register:      make(chan *Connection),
-		Unregister:    make(chan *Connection),
-		Connections:   make(map[*Connection]bool),
+		Register:      make(chan ConnectionInterface),
+		Unregister:    make(chan ConnectionInterface),
+		Connections:   make(map[ConnectionInterface]bool),
 		BroadcastJSON: make(chan interface{}),
 	}
 	go p.Start()
@@ -31,4 +36,8 @@ func (pool *Pool) Start() {
 			}
 		}
 	}
+}
+
+func (pool *Pool) UnregisterConnection(conn *Connection) {
+	pool.Unregister <- conn
 }
