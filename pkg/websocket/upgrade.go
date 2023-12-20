@@ -9,13 +9,22 @@ import (
 	"nhooyr.io/websocket"
 )
 
-var wsOptions = websocket.AcceptOptions{
-	InsecureSkipVerify: true,
-	OriginPatterns:     strings.Split(conf.ConfSingleton().CORSAllowedURLs, ","),
+var wsOptions *websocket.AcceptOptions
+var wsOptionsInitialized bool
+
+func getWSOptions() *websocket.AcceptOptions {
+	if !wsOptionsInitialized {
+		wsOptions = &websocket.AcceptOptions{
+			InsecureSkipVerify: true,
+			OriginPatterns:     strings.Split(conf.ConfSingleton().CORSAllowedURLs, ","),
+		}
+		wsOptionsInitialized = true
+	}
+	return wsOptions
 }
 
 func Upgrade(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
-	ws, err := websocket.Accept(w, r, &wsOptions)
+	ws, err := websocket.Accept(w, r, getWSOptions())
 	if err != nil {
 		log.Println(err)
 		return ws, err
