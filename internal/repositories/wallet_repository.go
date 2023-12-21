@@ -4,6 +4,10 @@ import (
 	"github.com/sergera/star-notary-backend/internal/domain"
 )
 
+type WalletRepositoryInterface interface {
+	CreateWallet(m *domain.WalletModel) error
+}
+
 type WalletRepository struct {
 	conn *DBConnection
 }

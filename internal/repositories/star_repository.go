@@ -6,6 +6,15 @@ import (
 	"github.com/sergera/star-notary-backend/internal/domain"
 )
 
+type StarRepositoryInterface interface {
+	CreateStar(m domain.StarModel) error
+	SetPrice(m domain.StarModel) error
+	RemoveFromSale(m domain.StarModel) error
+	Purchase(m domain.StarModel) error
+	SetName(m domain.StarModel) error
+	GetStarRange(m domain.StarRangeModel) ([]domain.StarModel, error)
+}
+
 type StarRepository struct {
 	conn *DBConnection
 }

@@ -12,10 +12,10 @@ import (
 )
 
 type StarAPI struct {
-	conn       *repositories.DBConnection
-	starRepo   *repositories.StarRepository
-	walletRepo *repositories.WalletRepository
-	notifier   *notifier.StarNotifier
+	conn       repositories.DBConnectionInterface
+	starRepo   repositories.StarRepositoryInterface
+	walletRepo repositories.WalletRepositoryInterface
+	notifier   notifier.StarNotifierInterface
 }
 
 func NewStarAPI() *StarAPI {

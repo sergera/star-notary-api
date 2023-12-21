@@ -11,6 +11,11 @@ import (
 var once sync.Once
 var instance *StarNotifier
 
+type StarNotifierInterface interface {
+	Subscribe(w http.ResponseWriter, r *http.Request)
+	Publish(msg interface{})
+}
+
 type StarNotifier struct {
 	pool websocket.PoolInterface
 }

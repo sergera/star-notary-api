@@ -8,6 +8,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type DBConnectionInterface interface {
+	Open()
+	Close()
+}
+
 type DBConnection struct {
 	psqlConfig string
 	Session    *sql.DB
